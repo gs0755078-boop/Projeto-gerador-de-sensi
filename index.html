@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENSI PRO | CPX AKIRA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-black text-white font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div id="login-box" class="w-full max-w-sm bg-zinc-900 border border-purple-600 p-8 rounded-2xl shadow-2xl text-center">
+        <h1 style="font-family: 'Orbitron';" class="text-2xl mb-6 text-purple-500">CPX AKIRA</h1>
+        <input type="text" id="chave" placeholder="COLE SUA KEY AQUI" class="w-full bg-black border border-zinc-800 p-4 rounded-lg mb-4 text-center outline-none focus:border-purple-500 uppercase">
+        <button onclick="acessar()" class="w-full bg-purple-600 p-4 rounded-lg font-bold hover:bg-purple-700">ATIVAR SENSI</button>
+    </div>
+
+    <div id="gerador" class="hidden w-full max-w-md bg-zinc-900 border border-purple-500 p-6 rounded-2xl">
+        <h2 class="text-center font-bold text-purple-500 mb-6 uppercase">Gerador Sensi 0-200</h2>
+        <select id="celular" class="w-full bg-black p-4 rounded-lg border border-zinc-800 mb-4">
+            <option value="">SELECIONE SEU CELULAR</option>
+            <option value="iphone">IPHONE (TODOS)</option>
+            <option value="samsung">SAMSUNG (LINHA A/S)</option>
+            <option value="xiaomi">XIAOMI / POCO</option>
+            <option value="motorola">MOTOROLA</option>
+        </select>
+        <button onclick="gerar()" class="w-full bg-purple-600 p-4 rounded-lg font-bold mb-6">GERAR AGORA</button>
+        <div id="resultado" class="grid grid-cols-2 gap-4"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyADWH-HdJUFByEuHBdHZkf7mDSD1-dBnRA",
+            authDomain: "cpx-akira.firebaseapp.com",
+            databaseURL: "https://cpx-akira-default-rtdb.firebaseio.com",
+            projectId: "cpx-akira",
+            storageBucket: "cpx-akira.firebasestorage.app",
+            messagingSenderId: "126066483108",
+            appId: "1:126066483108:web:ecbc2bb38a8e3e8575eb31"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function acessar() {
+            const key = document.getElementById('chave').value.trim();
+            db.ref('chaves/' + key).once('value').then((snap) => {
+                if(snap.exists()){
+                    const dados = snap.val();
+                    if(dados.validade && dados.validade < new Date().getTime()) return alert("KEY EXPIRADA!");
+                    document.getElementById('login-box').classList.add('hidden');
+                    document.getElementById('gerador').classList.remove('hidden');
+                } else { alert("KEY INVÁLIDA!"); }
+            });
+        }
+
+        function gerar() {
+            if(!document.getElementById('celular').value) return alert("Escolha o celular!");
+            const res = document.getElementById('resultado');
+            res.innerHTML = "";
+            ['GERAL', 'RED DOT', '2X', '4X'].forEach(s => {
+                const v = Math.floor(Math.random() * (200 - 180) + 180);
+                res.innerHTML += `<div class="bg-black p-4 rounded border border-purple-900 text-center"><p class="text-xs text-zinc-500">${s}</p><p class="text-2xl font-bold">${v}</p></div>`;
+            });
+        }
+    </script>
+</body>
+</html>

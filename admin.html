@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>ADMIN | CPX AKIRA</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .box { background: #111; border: 1px solid #6a0dad; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
+        button { background: #6a0dad; color: white; border: none; padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; width: 40%; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; background: #111; }
+        th, td { border: 1px solid #333; padding: 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h2>GERAR KEYS <span style="color:#6a0dad">CLOUD</span></h2>
+        <button onclick="setT(0.0208, '30M')">30 MIN</button>
+        <button onclick="setT(1, '1D')">1 DIA</button>
+        <button onclick="setT(7, '7D')">7 DIAS</button>
+        <button onclick="setT(0, 'PERM')">INFINITO</button>
+        <br><br>
+        <button onclick="criar()" style="width: 85%; background: #28a745;">GERAR E SALVAR ONLINE</button>
+        <p id="key-gerada" style="color:#00ff00; margin-top:10px; font-weight:bold;"></p>
+    </div>
+
+    <table border="1">
+        <thead><tr><th>KEY</th><th>TIPO</th><th>AÇÃO</th></tr></thead>
+        <tbody id="lista"></tbody>
+    </table>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyADWH-HdJUFByEuHBdHZkf7mDSD1-dBnRA",
+            authDomain: "cpx-akira.firebaseapp.com",
+            databaseURL: "https://cpx-akira-default-rtdb.firebaseio.com",
+            projectId: "cpx-akira",
+            storageBucket: "cpx-akira.firebasestorage.app",
+            messagingSenderId: "126066483108",
+            appId: "1:126066483108:web:ecbc2bb38a8e3e8575eb31"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let dias = 0; let cod = "";
+
+        function setT(d, c) { dias = d; cod = c; alert("Selecionado: " + c); }
+
+        function criar() {
+            if(!cod) return alert("Selecione o tempo!");
+            const k = "CPX-" + cod + "-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+            const e = cod === 'PERM' ? null : new Date().getTime() + (dias * 24 * 60 * 60 * 1000);
+            db.ref('chaves/' + k).set({ validade: e }).then(() => {
+                document.getElementById('key-gerada').innerText = k;
+                navigator.clipboard.writeText(k);
+            });
+        }
+
+        db.ref('chaves').on('value', (snap) => {
+            const data = snap.val();
+            let h = "";
+            for(let key in data) {
+                h += `<tr><td>${key}</td><td>${data[key].validade ? 'Temp' : 'Inf'}</td><td><button onclick="del('${key}')" style="background:red; width:auto">X</button></td></tr>`;
+            }
+            document.getElementById('lista').innerHTML = h;
+        });
+
+        function del(k) { if(confirm("Apagar?")) db.ref('chaves/' + k).remove(); }
+    </script>
+</body>
+</html>
